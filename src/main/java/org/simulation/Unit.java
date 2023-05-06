@@ -1,4 +1,4 @@
-package org.simulator;
+package org.simulation;
 
 public class Unit {
     private final int value;
