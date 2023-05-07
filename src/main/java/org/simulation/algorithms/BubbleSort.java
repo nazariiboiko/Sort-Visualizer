@@ -1,8 +1,8 @@
-package org.simulation.sortingalgorithms;
+package org.simulation.algorithms;
 
 import org.simulation.Unit;
 
-public class BubbleSort implements SortingMethod {
+public class BubbleSort implements SortingAlgorithm {
     private Unit[] arr;
     private int n;
     private int i;
@@ -43,7 +43,12 @@ public class BubbleSort implements SortingMethod {
     }
 
     @Override
-    public boolean isCycleComplete() {
+    public int getComparedIndex() {
+        return j + 1;
+    }
+
+    @Override
+    public boolean isCycleCompleted() {
         return !(j < n - i - 2);
     }
 }
