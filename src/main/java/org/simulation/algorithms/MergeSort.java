@@ -15,6 +15,7 @@ public class MergeSort implements SortingAlgorithm {
     private Unit L[];
     private Unit R[];
     private int k;
+    private int cycleRemains;
 
     public MergeSort(Unit[] arr) {
         this.arr = arr;
@@ -32,6 +33,7 @@ public class MergeSort implements SortingAlgorithm {
         for (int j = 0; j < n2; ++j)
             R[j] = arr[m + 1 + j];
         k = l;
+        cycleRemains = 0;
     }
 
     private boolean merge()
@@ -46,31 +48,30 @@ public class MergeSort implements SortingAlgorithm {
                 arr[k] = R[j];
                 j++;
                 k++;
-                return true;
+
             }
-
-            System.out.println(k);
-
+            return true;
         }
 
-        if( i < n1) {
             while (i < n1) {
                 arr[k] = L[i];
                 i++;
                 k++;
                 return true;
             }
-        }
 
-        if(j < n2) {
             while (j < n2) {
                 arr[k] = R[j];
                 j++;
                 k++;
+                return true;
             }
-            return true;
-        }
-
+//        System.out.println("i=" + i + " j=" + j + " n1=" + n1 + " n2=" + n2 + " k=" + k);
+        if(n1 == 1)
+            cycleRemains++;
+        if(cycleRemains >= 3)
+            return false;
+        System.out.println(cycleRemains);
         i = 0;
         j = 0;
         n1 = m - l + 1;
