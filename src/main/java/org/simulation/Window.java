@@ -17,13 +17,13 @@ import java.nio.ByteBuffer;
 public class Window {
     private static final int WINDOW_WIDTH = 1200;
     private static final int WINDOW_HEIGHT = 600;
-    private static final int N = 200;
+    private static final int N = 100;
     private Unit[] array;
     private long window;
     private SortingAlgorithm sortingMethod;
     private boolean isSorting;
-    private int timeDelay = 1;
-    private float scale = 1f;
+    private int timeDelay = 3;
+    private float scale = 2f;
     private int offset;
     private int borderX = WINDOW_WIDTH / 10;
     private int centerY;
