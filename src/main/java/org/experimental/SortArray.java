@@ -4,18 +4,15 @@ import java.util.Random;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class SortArray {
-    public static int WHITE = 0;
-    public static int GREEN = 1;
-
     private ReentrantLock mutex = new ReentrantLock();
     private final int size;
     private final int[] arr;
-    private final ColorMark[] mark_arr;
+    private final Color[] mark_arr;
 
     public SortArray(int size) {
         this.size = size;
         arr = SortArrayUtil.initializeArray(size);
-        mark_arr = new ColorMark[size];
+        mark_arr = new Color[size];
     }
 
     public void lock() {
@@ -44,7 +41,7 @@ public class SortArray {
         }
     }
 
-    public void mark(int i, ColorMark color) {
+    public void mark(int i, Color color) {
         mark_arr[i] = color;
     }
 

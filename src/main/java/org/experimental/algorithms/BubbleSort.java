@@ -1,6 +1,6 @@
 package org.experimental.algorithms;
 
-import org.experimental.ColorMark;
+import org.experimental.Color;
 import org.experimental.SortArray;
 
 public class BubbleSort implements SortingAlgorithm {
@@ -13,8 +13,8 @@ public class BubbleSort implements SortingAlgorithm {
                 if (arr.getValue(j) > arr.getValue(j + 1)) {
                     arr.lock();
                     arr.swap(j, j + 1);
-                    arr.mark(j, ColorMark.GREEN);
-                    arr.mark(j + 1, ColorMark.ORANGE);
+                    arr.mark(j, Color.GREEN);
+                    arr.mark(j + 1, Color.ORANGE);
                     arr.unlock();
                 }
             }
