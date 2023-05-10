@@ -1,6 +1,6 @@
-package org.experimental.ui;
+package org.simulation.ui;
 
-import org.experimental.Color;
+import org.simulation.Color;
 
 public class Button {
     public final float xScale;

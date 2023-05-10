@@ -1,6 +1,4 @@
-package org.experimental;
-
-import org.simulation.Unit;
+package org.simulation;
 
 import java.util.Random;
 
