@@ -1,4 +1,4 @@
-package org.experimental;
+package org.simulation;
 
 import org.simulation.Unit;
 

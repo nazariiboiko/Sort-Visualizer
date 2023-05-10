@@ -1,185 +1,182 @@
 package org.simulation;
 
-import org.lwjgl.BufferUtils;
+import org.simulation.algorithm.BubbleSort;
+import org.simulation.listener.KeyListener;
+import org.simulation.listener.MouseListener;
+import org.simulation.listener.ResizeListener;
+import org.simulation.ui.Component;
+import org.simulation.ui.ComponentMenu;
+import org.simulation.ui.ComponentArray;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
-import org.simulation.algorithms.BubbleSort;
-import org.simulation.algorithms.InsertionSort;
-import org.simulation.algorithms.MergeSort;
-import org.simulation.algorithms.SortingAlgorithm;
 
 import java.awt.*;
+import java.awt.Color;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 
-public class Window {
-    private static final int WINDOW_WIDTH = 1200;
-    private static final int WINDOW_HEIGHT = 600;
-    private static final int N = 100;
-    private Unit[] array;
+public class Window implements Component {
+    private int windowWidth = 1200;
+    private int windowHeight = 600;
+    private Point windowSize;
     private long window;
-    private SortingAlgorithm sortingMethod;
-    private boolean isSorting;
-    private int timeDelay = 3;
-    private float scale = 2f;
-    private int offset;
-    private int borderX = WINDOW_WIDTH / 10;
-    private int centerY;
-    private int centerX;
+    private ComponentMenu componentMenu;
+    private ComponentArray componentSortArray;
+    private KeyListener keyListener;
+    private MouseListener mouseListener;
+    private ResizeListener sizeListener;
+    private Mediator mediator;
 
     public Window() {
         init();
+        registerCallback();
         draw();
     }
 
     private void init() {
         GLFW.glfwInit();
-        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE);
-        window = GLFW.glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Sorting Visualization", 0, 0);
+        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
+        window = GLFW.glfwCreateWindow(windowWidth, windowHeight, "Sorting Visualization", 0, 0);
         GLFW.glfwMakeContextCurrent(window);
         GL.createCapabilities();
         GL11.glMatrixMode(GL11.GL_PROJECTION);
         GL11.glLoadIdentity();
-        GL11.glOrtho(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT, 1, -1);
+        GL11.glOrtho(0, windowWidth, 0, windowHeight, 1, -1);
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
-        GLFW.glfwSetKeyCallback(window, keyCallback);
 
-        array = new Unit[N];
-        UnitUtil.fillFrom1ToN(array);
-        isSorting = false;
-        offset = (WINDOW_WIDTH - (3 * borderX)) / N;
-        centerY = WINDOW_HEIGHT / 2;
-        centerX = WINDOW_WIDTH / 2;
+        windowSize = new Point(windowWidth, windowHeight);
+        componentMenu = new ComponentMenu(windowSize);
+        componentSortArray = new ComponentArray(this, windowSize, 100);
+
+
+        mediator = new ComponentCommunicationMediator();
+        mediator.registerComponent(this);
+        mediator.registerComponent(componentMenu);
+        mediator.registerComponent(componentSortArray);
+
+    }
+
+    private void registerCallback() {
+        sizeListener = new ResizeListener(this);
+        keyListener = new KeyListener(this);
+        mouseListener = new MouseListener(this);
+
+        GLFW.glfwSetWindowSizeCallback(window, sizeListener);
+        GLFW.glfwSetMouseButtonCallback(window, mouseListener);
+        GLFW.glfwSetKeyCallback(window, keyListener);
+    }
+
+    private void terminate() {
+        sizeListener.free();
+        mouseListener.free();
+        keyListener.free();
+        GLFW.glfwTerminate();
+    }
+
+    public void handleKeyEvent(int key, int action) {
+        if (key == GLFW.GLFW_KEY_S && action == GLFW.GLFW_PRESS) {
+            mediator.shuffle();
+        } else if (key == GLFW.GLFW_KEY_D && action == GLFW.GLFW_PRESS) {
+            //UnitUtil.fillWithRandomValues(array, 100);
+        } else if (key == GLFW.GLFW_KEY_1 && action == GLFW.GLFW_PRESS) {
+            mediator.setSortingAlgorithm(new BubbleSort());
+        } else if (key == GLFW.GLFW_KEY_2 && action == GLFW.GLFW_PRESS) {
+            //sortingMethod = new InsertionSort(array);
+        } else if (key == GLFW.GLFW_KEY_3 && action == GLFW.GLFW_PRESS) {
+            //sortingMethod = new MergeSort(array);
+        }
+    }
+
+    public long getWindow() {
+        return this.window;
+    }
+
+    public void onClick() {
+        int[] pos = getCursorPos();
+        mediator.sendClickIvent(pos[0], pos[1]);
+    }
+
+    public void setWindowSize(int windowWidth, int windowHeight) {
+        if(windowWidth < 450)
+            windowWidth = 450;
+        if(windowHeight < 510)
+            windowHeight = 510;
+
+        this.windowWidth = windowWidth;
+        this.windowHeight = windowHeight;
+        GLFW.glfwSetWindowSize(window, windowWidth, windowHeight);
+        GL11.glViewport(0, 0, windowWidth, windowHeight);
+        GL11.glMatrixMode(GL11.GL_PROJECTION);
+        GL11.glLoadIdentity();
+        GL11.glOrtho(0, windowWidth, 0, windowHeight, 1, -1);
+        GL11.glMatrixMode(GL11.GL_MODELVIEW);
+        windowSize.setLocation(windowWidth, windowHeight);
+    }
+
+    public int[] getCursorPos() {
+        double[] xpos = new double[1];
+        double[] ypos = new double[1];
+        GLFW.glfwGetCursorPos(window, xpos, ypos);
+        ypos[0] = windowHeight - ypos[0];
+        return new int[] {(int)xpos[0], (int)ypos[0]};
     }
 
     private void draw() {
         while (!GLFW.glfwWindowShouldClose(window)) {
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-            GL11.glClearColor(1f, 1f, 1f, 1f);
-            ////
-            drawGrid();
-
-            if(isSorting)
-                doOneIteration();
-
-            GL11.glColor3f(0f, 0f, 0f);
-            GL11.glBegin(GL11.GL_LINE_STRIP);
-            for(int i = 0; i < array.length; i++) {
-                int startPoint = i + i * offset + borderX;
-                GL11.glVertex2f(startPoint, centerY);
-                GL11.glVertex2f(startPoint, centerY + array[i].getValue() * scale);
-                GL11.glVertex2f(startPoint + offset, centerY + array[i].getValue() * scale);
-                GL11.glVertex2f(startPoint + offset, centerY);
-            }
-
-            drawInfo();
-
-            GL11.glEnd();
-            ////
+            mediator.updateAllComponents();
             GLFW.glfwSwapBuffers(window);
             GLFW.glfwPollEvents();
         }
-
-        keyCallback.free();
-        GLFW.glfwTerminate();
+        terminate();
     }
+    public void drawString(String str, int x, int y, Color background, Color fontColor) {
+        int width = str.length() * 20;
+        int height = 30;
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = (Graphics2D) image.getGraphics();
+        g.setColor(background);
+        g.fillRect(0, 0, width, height);
+        g.setColor(fontColor);
 
-    private void drawGrid() {
-        GL11.glColor3f(0f, 0f, 0f);
-        GL11.glBegin(GL11.GL_LINE_STRIP);
-        GL11.glVertex2f(0 , WINDOW_HEIGHT / 2);
-        GL11.glVertex2f(WINDOW_WIDTH , WINDOW_HEIGHT / 2);
+        g.setFont(new Font("Arial", Font.BOLD, 16));
+        g.drawString(str, 0, 25);
+        g.dispose();
+        width = g.getFontMetrics().stringWidth(str) + 7;
+        BufferedImage flippedImage = new BufferedImage(width, height, image.getType());
+        AffineTransform transform = AffineTransform.getTranslateInstance(0, height);
+        transform.scale(1, -1);
+        Graphics2D gt = flippedImage.createGraphics();
+        gt.drawImage(image, transform, null);
+        gt.dispose();
+        ByteBuffer pixels = ByteBuffer.allocateDirect(width * height * 4);
+        int[] imagePixels = flippedImage.getRGB(0, 0, width, height, null, 0, width);
+        for (int pixel : imagePixels) {
+            pixels.put((byte) ((pixel >> 16) & 0xFF));  // red
+            pixels.put((byte) ((pixel >> 8) & 0xFF));   // green
+            pixels.put((byte) (pixel & 0xFF));          // blue
+            pixels.put((byte) ((pixel >> 24) & 0xFF));  // alpha
 
-        GL11.glVertex2f(WINDOW_WIDTH, 0);
-        GL11.glVertex2f(WINDOW_WIDTH, WINDOW_HEIGHT);
-        GL11.glVertex2f(0, WINDOW_HEIGHT);
-        GL11.glVertex2f(0, 0);
-
-        GL11.glEnd();
-    }
-
-    private void drawInfo() {
-        String text = "ABCD";
-        int s = 256; //Take whatever size suits you.
-        BufferedImage b = new BufferedImage(s, s, BufferedImage.TYPE_4BYTE_ABGR);
-        Graphics2D g = b.createGraphics();
-        g.drawString(text, 0, 0);
-
-        int co = b.getColorModel().getNumComponents();
-
-        byte[] data = new byte[co * s * s];
-        b.getRaster().getDataElements(0, 0, s, s, data);
-
-        ByteBuffer pixels = BufferUtils.createByteBuffer(data.length);
-        pixels.put(data);
-        pixels.rewind();
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, s, s, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, pixels);
-    }
-
-    private void doOneIteration() {
-        try {
-            Thread.sleep(timeDelay);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
-        isSorting = sortingMethod.sort();
-        GL11.glColor3f(0.2f, 1f, 0.2f);
+        pixels.flip();
 
-        GL11.glBegin(GL11.GL_QUADS);
-        int i = sortingMethod.getCurrentIndex();
-        int startPoint = i + i * offset + borderX;
-        float top = array[i].getValue() * scale;
-
-        GL11.glVertex2f(startPoint, centerY);
-        GL11.glVertex2f(startPoint, centerY + top);
-        GL11.glVertex2f(startPoint + offset, centerY + top);
-        GL11.glVertex2f(startPoint + offset, centerY);
-        i = sortingMethod.getComparedIndex();
-        if(!sortingMethod.isCycleCompleted()) {
-            GL11.glColor3f(1f, 0.5f, 0.2f);
-            startPoint = i + i * offset + borderX;
-            top = array[i].getValue() * scale;
-
-            GL11.glVertex2f(startPoint, centerY);
-            GL11.glVertex2f(startPoint, centerY + top);
-            GL11.glVertex2f(startPoint + offset, centerY + top);
-            GL11.glVertex2f(startPoint + offset, centerY);
-        }
-        GL11.glEnd();
+        GL11.glRasterPos2i(x, y);
+        GL11.glDrawPixels(width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, pixels);
     }
-
-    private void handleKeyEvent(int key, int action) {
-        if (key == GLFW.GLFW_KEY_S && action == GLFW.GLFW_PRESS) {
-            UnitUtil.shuffle(array);
-            isSorting = false;
-        } else if (key == GLFW.GLFW_KEY_D && action == GLFW.GLFW_PRESS) {
-            UnitUtil.fillWithRandomValues(array, 100);
-            isSorting = false;
-        } else if (key == GLFW.GLFW_KEY_1 && action == GLFW.GLFW_PRESS) {
-            sortingMethod = new BubbleSort(array);
-            isSorting = true;
-        } else if (key == GLFW.GLFW_KEY_2 && action == GLFW.GLFW_PRESS) {
-            sortingMethod = new InsertionSort(array);
-            isSorting = true;
-        } else if (key == GLFW.GLFW_KEY_3 && action == GLFW.GLFW_PRESS) {
-            sortingMethod = new MergeSort(array);
-            isSorting = true;
-        }
-    }
-
-    private GLFWKeyCallback keyCallback = new GLFWKeyCallback() {
-        @Override
-        public void invoke(long window, int key, int scancode, int action, int mods) {
-            if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_PRESS) {
-                GLFW.glfwSetWindowShouldClose(window, true);
-            }
-            handleKeyEvent(key, action);
-        }
-    };
 
     static public void main(String[] args) {
         new Window();
+    }
+
+    @Override
+    public void setMediator(Mediator mediator) {
+        this.mediator = mediator;
+    }
+
+    @Override
+    public String getName() {
+        return "Window";
     }
 }

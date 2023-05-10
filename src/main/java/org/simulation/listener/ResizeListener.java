@@ -1,12 +1,12 @@
-package org.experimental.listener;
+package org.simulation.listener;
 
-import org.experimental.Window;
+import org.simulation.Window;
 import org.lwjgl.glfw.GLFWWindowSizeCallback;
 
-public class WindowResizeListener extends GLFWWindowSizeCallback {
+public class ResizeListener extends GLFWWindowSizeCallback {
     private Window window;
 
-    public WindowResizeListener(Window window) {
+    public ResizeListener(Window window) {
         this.window = window;
     }
 

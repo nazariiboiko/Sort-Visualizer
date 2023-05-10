@@ -1,4 +1,4 @@
-package org.experimental.ui;
+package org.simulation.ui;
 
 @FunctionalInterface
 public interface ButtonAction {

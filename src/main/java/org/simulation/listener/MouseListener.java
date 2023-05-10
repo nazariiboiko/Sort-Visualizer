@@ -1,6 +1,6 @@
-package org.experimental.listener;
+package org.simulation.listener;
 
-import org.experimental.Window;
+import org.simulation.Window;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 
 import static org.lwjgl.glfw.GLFW.*;
