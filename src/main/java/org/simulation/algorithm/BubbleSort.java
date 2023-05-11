@@ -5,7 +5,7 @@ import org.simulation.SortArray;
 public class BubbleSort implements SortingAlgorithm {
     @Override
     public String getName() {
-        return "BubbleSort";
+        return "BubbleSort\t";
     }
 
     @Override
@@ -15,7 +15,7 @@ public class BubbleSort implements SortingAlgorithm {
             for (int j = 0; j < n - i - 1; j++) {
                 if (arr.compare(j, j+1)) {
                     if(!arr.getAccess())
-                        break;
+                        return false;
                     arr.swap(j, j + 1);
                 }
             }

@@ -11,8 +11,10 @@ public class ComponentMenu implements Component {
     private List<Button> buttons;
     private Point windowSize;
     private Mediator mediator;
+    private String[] names;
     public ComponentMenu(Point windowSize) {
         this.windowSize = windowSize;
+        names = new String[] {"S - Shuffle", "1 - Bubble Sort", "2 - Insertion Sort"};
         buttons = new ArrayList<>();
         initButtons();
     }
@@ -71,8 +73,11 @@ public class ComponentMenu implements Component {
         }
         int x = windowSize.x - windowSize.x / 6 + 5;
         y -= 50;
-        mediator.drawString("S - Shuffle", x, (int) y, Color.WHITE, Color.BLACK);
-        mediator.drawString("1 - Bubble Sort",  x, (int) y - 25, Color.WHITE, Color.BLACK);
+
+        for(String name : names) {
+            mediator.drawString(name, x, (int) y, Color.WHITE, Color.BLACK);
+            y -= 25;
+        }
     }
 
     @Override

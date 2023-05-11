@@ -7,34 +7,36 @@ public class SortArray {
     private ReentrantLock mutex = new ReentrantLock();
     private final int size;
     private final int[] arr;
-    private final Color[] mark_arr;
+    private final Mark[] buffer_mark;
+    private final Mark[] current_mark;
     private boolean isSorting;
+    private boolean isSortingComplete;
     private int delay;
     private int accesses;
     private int comparisons;
-    private boolean canUnmark;
 
     public SortArray(int size) {
         this.size = size;
         arr = SortArrayUtil.initializeArray(size);
-        mark_arr = new Color[size];
+        buffer_mark = new Mark[size];
+        current_mark = new Mark[size];
         isSorting = false;
         delay = 1;
         accesses = 0;
         comparisons = 0;
-        canUnmark = false;
+        isSortingComplete = true;
     }
 
     public void resetCounter() {
-        unmarkAll();
+        resetCurrentMark();
         comparisons = 0;
         accesses = 0;
     }
 
     public boolean getAccess() {
+        waitDelay();
         if(!isSorting)
             return false;
-        lock();
         return true;
     }
 
@@ -46,15 +48,7 @@ public class SortArray {
         mutex.unlock();
     }
 
-    public void swap(int i, int j) {
-        mark(i, Color.RED);
-        mark(j, Color.RED);
-        canUnmark = true;
-        int tmp = arr[i];
-        arr[i] = arr[j];
-        arr[j] = tmp;
-        accesses += 2;
-        unlock();
+    public void waitDelay() {
         try {
             Thread.sleep(delay);
         } catch (InterruptedException e) {
@@ -62,46 +56,68 @@ public class SortArray {
         }
     }
 
+    public void swap(int i, int j) {
+        resetCurrentMark();
+        mark(i, Mark.RED);
+        mark(j, Mark.RED);
+        int tmp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = tmp;
+        accesses += 2;
+    }
+
     public boolean compare(int i, int j) {
-        canUnmark = true;
-        mark(i, Color.RED);
-        mark(j, Color.RED);
+        resetCurrentMark();
+        mark(i, Mark.RED);
+        waitDelay();
+        mark(j, Mark.RED);
         accesses += 2;
         comparisons++;
         return arr[i] > arr[j];
     }
 
-    public void mark(int i, Color color) {
-        //mark_arr[i] = color;
-    }
-
-    public void unmark(int i) {
-        mark_arr[i] = Color.DEFAULT;
-
+    public void mark(int i, Mark mark) {
+        current_mark[i] = mark;
     }
 
     public void swapMark(int i, int j) {
-        Color tmp = mark_arr[i];
-        mark_arr[i] = mark_arr[j];
-        mark_arr[j] = tmp;
+        Mark tmp = current_mark[i];
+        current_mark[i] = current_mark[j];
+        current_mark[j] = tmp;
     }
 
-    public void unmarkAll() {
-        if(canUnmark)
-            for(int i = 0; i < mark_arr.length; i++)
-                mark_arr[i] = Color.DEFAULT;
+    public void unmark(int i) {
+        current_mark[i] = Mark.DEFAULT;
     }
 
-    public Color getMark(int i) {
-        Color color;
-        if(mark_arr[i] == null)
-            color = Color.WHITE;
-        else
-            color = mark_arr[i];
-        return color;
+    public void resetCurrentMark() {
+        fillBufferMark();
+        for(int i = 0; i < size; i++)
+            if(current_mark[i] != null)
+                current_mark[i] = null;
+
+    }
+
+    public Mark getMark(int i) {
+        fillBufferMark();
+        Mark mark;
+        if(buffer_mark[i] == null)
+            mark = Mark.WHITE;
+        else {
+            mark = buffer_mark[i];
+            buffer_mark[i] = null;
+        }
+        return mark;
+    }
+
+    public void fillBufferMark() {
+        for(int i = 0; i < size; i++)
+            if(current_mark[i] != null)
+                buffer_mark[i] = current_mark[i];
     }
 
     public void instantShuffle() {
+        resetCurrentMark();
         Random random = new Random();
         for(int i = 0; i < size; i++) {
             int randomIndex = Math.abs(random.nextInt() % size);
@@ -109,6 +125,26 @@ public class SortArray {
             arr[i] = arr[randomIndex];
             arr[randomIndex] = tmp;
         }
+    }
+
+    public void setSortingComplete(boolean flag) {
+        isSortingComplete = flag;
+    }
+    public boolean checkSorting() {
+        if(!isSortingComplete)
+            return  false;
+        for(int i = 0; i < size - 1; i++) {
+            int a = getValue(i, false);
+            int b = getValue(i + 1, false);
+            if(a > b)
+                return false;
+            mark(i, Mark.GREEN);
+            mark(i + 1, Mark.RED);
+            waitDelay();
+        }
+        mark(size - 1, Mark.GREEN);
+        resetCurrentMark();
+        return true;
     }
 
     public void setSorting(boolean flag) {
@@ -120,7 +156,7 @@ public class SortArray {
     }
 
     public int getValue(int i) {
-        mark(i, Color.RED);
+        mark(i, Mark.RED);
         return getValue(i, true);
     }
 
@@ -128,6 +164,10 @@ public class SortArray {
         if(flag)
             accesses++;
         return arr[i];
+    }
+
+    public void setValue(int i, int val) {
+        arr[i] = i;
     }
 
     public int getComparisons() {

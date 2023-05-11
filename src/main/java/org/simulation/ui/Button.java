@@ -1,6 +1,6 @@
 package org.simulation.ui;
 
-import org.simulation.Color;
+import org.simulation.Mark;
 
 public class Button {
     public final float xScale;
@@ -9,7 +9,7 @@ public class Button {
     public final float heightScale;
     public final String text;
     private ButtonAction buttonAction;
-    private Color color;
+    private Mark mark;
 
     public Button(int x, int y, int width, int height, int windowWidth, int windowHeight, ButtonAction buttonAction, String text) {
         this.xScale = (float)windowWidth / x;

@@ -1,6 +1,7 @@
 package org.simulation;
 
 import org.simulation.algorithm.BubbleSort;
+import org.simulation.algorithm.InsertionSort;
 import org.simulation.listener.KeyListener;
 import org.simulation.listener.MouseListener;
 import org.simulation.listener.ResizeListener;
@@ -48,7 +49,7 @@ public class Window implements Component {
 
         windowSize = new Point(windowWidth, windowHeight);
         componentMenu = new ComponentMenu(windowSize);
-        componentSortArray = new ComponentArray(this, windowSize, 100);
+        componentSortArray = new ComponentArray(windowSize, 500);
 
 
         mediator = new ComponentCommunicationMediator();
@@ -83,7 +84,7 @@ public class Window implements Component {
         } else if (key == GLFW.GLFW_KEY_1 && action == GLFW.GLFW_PRESS) {
             mediator.setSortingAlgorithm(new BubbleSort());
         } else if (key == GLFW.GLFW_KEY_2 && action == GLFW.GLFW_PRESS) {
-            //sortingMethod = new InsertionSort(array);
+            mediator.setSortingAlgorithm(new InsertionSort());
         } else if (key == GLFW.GLFW_KEY_3 && action == GLFW.GLFW_PRESS) {
             //sortingMethod = new MergeSort(array);
         }
@@ -99,8 +100,8 @@ public class Window implements Component {
     }
 
     public void setWindowSize(int windowWidth, int windowHeight) {
-        if(windowWidth < 450)
-            windowWidth = 450;
+        if(windowWidth < 825)
+            windowWidth = 825;
         if(windowHeight < 510)
             windowHeight = 510;
 

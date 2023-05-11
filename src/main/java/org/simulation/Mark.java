@@ -1,6 +1,6 @@
 package org.simulation;
 
-public enum Color {
+public enum Mark {
 
     WHITE(new float[]{1f, 1f, 1f}),
     GREEN(new float[]{0.2f, 1f, 0.2f}),
@@ -10,12 +10,12 @@ public enum Color {
 
     private final float[] mark;
 
-    Color(float[] mark) {
+    Mark(float[] mark) {
         this.mark = mark;
     }
 
-    Color(Color color) {
-        this.mark = color.mark;
+    Mark(Mark mark) {
+        this.mark = mark.mark;
     }
 
     public float[] getValue() {

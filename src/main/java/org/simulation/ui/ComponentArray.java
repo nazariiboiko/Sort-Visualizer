@@ -16,7 +16,7 @@ public class ComponentArray implements Component {
     private SortingAlgorithm sortingAlgorithm;
     private Mediator mediator;
 
-    public ComponentArray(Window window, Point windowSize, int size) {
+    public ComponentArray(Point windowSize, int size) {
         this.sortArray = new SortArray(size);
         this.windowSize = windowSize;
         this.sortingAlgorithm = new NoneSort();
@@ -32,8 +32,10 @@ public class ComponentArray implements Component {
         sortArray.resetCounter();
         sortArray.setSorting(true);
         Runnable runSort = () -> {
-            this.sortArray.setSorting(sortingAlgorithm.sort(sortArray));
-            this.sortArray.unmarkAll();
+            sortArray.setSorting(sortingAlgorithm.sort(sortArray));
+            sortArray.checkSorting();
+            sortArray.setSortingComplete(true);
+            sortArray.resetCurrentMark();
         };
         Thread thread = new Thread(runSort);
         thread.start();
@@ -41,15 +43,13 @@ public class ComponentArray implements Component {
     }
 
     public void stopSorting() {
+        sortArray.setSortingComplete(false);
         sortArray.setSorting(false);
-        sortArray.unmarkAll();
     }
 
     public void shuffle() {
         sortArray.setSorting(false);
-        sortArray.lock();
         sortArray.instantShuffle();
-        sortArray.unlock();
     }
 
     public void update() {
@@ -57,7 +57,6 @@ public class ComponentArray implements Component {
         float topPadding = 20;
         float scale = (windowSize.y - topPadding * 2)/ sortArray.getSize();
         float columnWidth = (windowSize.x - (windowSize.x / 6f) - padding * 2) / sortArray.getSize() - 1;
-        sortArray.lock();
         GL11.glBegin(GL11.GL_QUADS);
         for(int i = 0; i < sortArray.getSize(); i++) {
             float[] rgb = sortArray.getMark(i).getValue();
@@ -68,12 +67,10 @@ public class ComponentArray implements Component {
             GL11.glVertex2f(startPoint + columnWidth,sortArray.getValue(i, false) * scale + padding);
             GL11.glVertex2f(startPoint + columnWidth, padding);
         }
-        sortArray.unlock();
         GL11.glEnd();
-        //sortArray.unmarkAll();
         StringBuilder sb = new StringBuilder();
         sb.append("Algorithm: " + sortingAlgorithm.getName() + "     ");
-        sb.append("Delay: " + "0." + sortArray.getDelay() + "ms     ");
+        sb.append("Delay: " + sortArray.getDelay() / 1000f + "ms     ");
         sb.append("Comparisons: " + sortArray.getComparisons() + "     ");
         sb.append("Array Accesses: " + sortArray.getAccesses() + "     ");
         mediator.drawString(sb.toString(), 10, windowSize.y - 25, Color.BLACK, Color.WHITE);
