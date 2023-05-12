@@ -4,67 +4,92 @@ import org.simulation.SortArray;
 import org.simulation.SortArrayUtil;
 
 import javax.sound.sampled.*;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class Sound {
+public class Sound extends Thread {
+    final static public int SAMPLING_RATE = 44100;
+    final static public int SAMPLE_SIZE = 2;
+    static public double BUFFER_DURATION = 0.10;
+    final static public int SINE_PACKET_SIZE = (int)(BUFFER_DURATION*SAMPLING_RATE*SAMPLE_SIZE);
 
-    public static void main(String[] args) {
-        int[] arr = SortArrayUtil.initializeArray(100);
-        for(int i = 0; i < arr.length; i++) {
-            createWave(i);
-        }
+    SourceDataLine line;
+    private ConcurrentLinkedQueue<Integer> freqs;
+    private boolean terminate = false;
+
+    {
+        freqs = new ConcurrentLinkedQueue<>();
+        System.out.println("init");
     }
 
-    public static void createWave(int val) {
-        int sampleRate = 44100;  // Sample rate in Hz
-        double duration = 0.05;        // Duration in seconds
-        double numSamples = sampleRate * duration;
-
-        double[] waveform = new double[(int) numSamples];
-
-        double phase = 0;
-        for (int i = 0; i < numSamples; i++) {
-            double frequency = 120 + 12 * (i*i);
-            double phaseIncrement = frequency / sampleRate;
-            waveform[i] += Oscillator.getNextSample(frequency, sampleRate, Waveform.TRIANGLE);
-            phase += phaseIncrement;
-        }
-
-        // Print the first 10 samples of the mixed waveform
-        System.out.println("Mixed Waveform:");
-        System.out.println(Arrays.toString(Arrays.copyOfRange(waveform, 0, 10)));
-        Sound.playAudio(waveform, sampleRate);
+    public void onSound(int valueOfArray) {
+        freqs.add(getFrequency(valueOfArray));
     }
 
-    public static void playAudio(double[] audioData, int sampleRate) {
+    public void setDelay(int ms) {
+        this.BUFFER_DURATION = ms;
+    }
+
+    private int getFrequency(int val) {
+        return Math.abs(val) * 8 + 200;
+    }
+
+    private int getLineSampleCount() {
+        return line.getBufferSize() - line.available();
+    }
+
+    public void run() {
+        double fCyclePosition = 0;
+
         try {
-            // Set up audio format
-            AudioFormat audioFormat = new AudioFormat(sampleRate, 16, 1, true, false);
-            DataLine.Info dataLineInfo = new DataLine.Info(SourceDataLine.class, audioFormat);
+            AudioFormat format = new AudioFormat(44100, 16, 1, true, true);
+            DataLine.Info info = new DataLine.Info(SourceDataLine.class, format, SINE_PACKET_SIZE*2 * 16);
 
-            // Open audio output line
-            SourceDataLine line = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
-            line.open(audioFormat);
+            if (!AudioSystem.isLineSupported(info))
+                throw new LineUnavailableException();
+
+            line = (SourceDataLine)AudioSystem.getLine(info);
+            line.open(format);
             line.start();
-
-            // Convert double audio data to bytes
-            byte[] audioBytes = new byte[audioData.length * 2];
-            for (int i = 0; i < audioData.length; i++) {
-                short sample = (short) (audioData[i] * Short.MAX_VALUE);
-                audioBytes[i * 2] = (byte) (sample & 0xFF);
-                audioBytes[i * 2 + 1] = (byte) ((sample >> 8) & 0xFF);
-            }
-
-            // Write audio data to the line
-            line.write(audioBytes, 0, audioBytes.length);
-
-            // Wait until all data is played
-            line.drain();
-
-            line.stop();
-            line.close();
-        } catch (LineUnavailableException e) {
-            e.printStackTrace();
         }
+        catch (LineUnavailableException e) { }
+
+        ByteBuffer cBuf = ByteBuffer.allocate(SINE_PACKET_SIZE);
+
+        while (!terminate) {
+            if(!freqs.isEmpty()) {
+                double frequency = (double)freqs.poll();
+                System.out.println(freqs.size());
+
+                double fCycleInc = frequency / SAMPLING_RATE;
+
+                cBuf.clear();
+
+                for (int i = 0; i < SINE_PACKET_SIZE / SAMPLE_SIZE; i++) {
+                    cBuf.putShort((short) (Short.MAX_VALUE * Math.sin(2 * Math.PI * fCyclePosition)));
+
+                    fCyclePosition += fCycleInc;
+                    if (fCyclePosition > 1)
+                        fCyclePosition -= 1;
+                }
+
+                line.write(cBuf.array(), 0, cBuf.position());
+
+                try {
+                    while (getLineSampleCount() > SINE_PACKET_SIZE)
+                        Thread.sleep(1);
+                } catch (InterruptedException e) {
+                }
+            }
+        }
+
+        line.drain();
+        line.close();
+    }
+
+    public void exit() {
+        terminate = true;
     }
 }

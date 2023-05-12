@@ -21,9 +21,9 @@ public class ComponentMenu implements Component {
 
     private void initButtons() {
         addButton(windowSize.x - 190, windowSize.y - 70, 180, 50, () -> mediator.startSorting(), " Run");
-        addButton(windowSize.x - 190, windowSize.y - 140, 180, 50, () -> mediator.reset(), " Stop");
-        addButton(windowSize.x - 190, windowSize.y - 210, 180, 50, () -> System.out.println("step!!"), " Step");
-        addButton(windowSize.x - 190, windowSize.y - 280, 180, 50, () -> System.out.println("sound!!"), "Sound");
+        addButton(windowSize.x - 190, windowSize.y - 140, 180, 50, () -> mediator.stop(), " Stop");
+        //addButton(windowSize.x - 190, windowSize.y - 210, 180, 50, () -> System.out.println("step!!"), " Step");
+        addButton(windowSize.x - 190, windowSize.y - 280, 180, 50, () -> mediator.setSoundStatus(true), "Sound");
 
     }
 

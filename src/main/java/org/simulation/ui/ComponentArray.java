@@ -6,6 +6,7 @@ import org.simulation.Window;
 import org.simulation.algorithm.NoneSort;
 import org.simulation.algorithm.SortingAlgorithm;
 import org.lwjgl.opengl.GL11;
+import org.simulation.sound.Sound;
 
 import java.awt.*;
 
@@ -15,6 +16,7 @@ public class ComponentArray implements Component {
     private Point windowSize;
     private SortingAlgorithm sortingAlgorithm;
     private Mediator mediator;
+    private Sound sound;
 
     public ComponentArray(Point windowSize, int size) {
         this.sortArray = new SortArray(size);
@@ -50,6 +52,18 @@ public class ComponentArray implements Component {
     public void shuffle() {
         sortArray.setSorting(false);
         sortArray.instantShuffle();
+    }
+
+    public void setSoundStatus(boolean flag) {
+        if(flag && sound == null) {
+            Sound sound = new Sound();
+            sortArray.setSound(sound);
+            sound.setDelay(sortArray.getDelay());
+            sound.start();
+        } else {
+            if(sound != null)
+                sound.exit();
+        }
     }
 
     public void update() {

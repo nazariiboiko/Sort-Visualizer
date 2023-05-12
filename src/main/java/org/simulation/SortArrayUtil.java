@@ -38,4 +38,8 @@ public class SortArrayUtil {
             array.swap(i, Math.abs(random.nextInt() % edge));
     }
 
+    public static int getRandomIntVal() {
+        return random.nextInt();
+    }
+
 }

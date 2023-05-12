@@ -40,6 +40,11 @@ public class ComponentCommunicationMediator implements Mediator {
     }
 
     @Override
+    public void setSoundStatus(boolean flag) {
+        componentArray.setSoundStatus(flag);
+    }
+
+    @Override
     public void shuffle() {
        componentArray.shuffle();
     }
@@ -50,7 +55,7 @@ public class ComponentCommunicationMediator implements Mediator {
     }
 
     @Override
-    public void reset() {
+    public void stop() {
         componentArray.stopSorting();
     }
 

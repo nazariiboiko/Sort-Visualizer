@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 public class Window implements Component {
     private int windowWidth = 1200;
     private int windowHeight = 600;
+    private int arraySize = 100;
     private Point windowSize;
     private long window;
     private ComponentMenu componentMenu;
@@ -49,7 +50,7 @@ public class Window implements Component {
 
         windowSize = new Point(windowWidth, windowHeight);
         componentMenu = new ComponentMenu(windowSize);
-        componentSortArray = new ComponentArray(windowSize, 500);
+        componentSortArray = new ComponentArray(windowSize, arraySize);
 
 
         mediator = new ComponentCommunicationMediator();
@@ -73,6 +74,7 @@ public class Window implements Component {
         sizeListener.free();
         mouseListener.free();
         keyListener.free();
+        mediator.stop();
         GLFW.glfwTerminate();
     }
 

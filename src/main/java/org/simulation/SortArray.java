@@ -1,5 +1,7 @@
 package org.simulation;
 
+import org.simulation.sound.Sound;
+
 import java.util.Random;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -11,6 +13,7 @@ public class SortArray {
     private final Mark[] current_mark;
     private boolean isSorting;
     private boolean isSortingComplete;
+    private Sound sound;
     private int delay;
     private int accesses;
     private int comparisons;
@@ -21,7 +24,7 @@ public class SortArray {
         buffer_mark = new Mark[size];
         current_mark = new Mark[size];
         isSorting = false;
-        delay = 1;
+        delay = 100;
         accesses = 0;
         comparisons = 0;
         isSortingComplete = true;
@@ -64,6 +67,7 @@ public class SortArray {
         arr[i] = arr[j];
         arr[j] = tmp;
         accesses += 2;
+        onSound(i);
     }
 
     public boolean compare(int i, int j) {
@@ -74,6 +78,10 @@ public class SortArray {
         accesses += 2;
         comparisons++;
         return arr[i] > arr[j];
+    }
+
+    public void increaseCompare() {
+        comparisons++;
     }
 
     public void mark(int i, Mark mark) {
@@ -127,6 +135,11 @@ public class SortArray {
         }
     }
 
+    private void onSound(int val) {
+        if(sound != null)
+            sound.onSound(val);
+    }
+
     public void setSortingComplete(boolean flag) {
         isSortingComplete = flag;
     }
@@ -145,6 +158,10 @@ public class SortArray {
         mark(size - 1, Mark.GREEN);
         resetCurrentMark();
         return true;
+    }
+
+    public void setSound(Sound sound) {
+        this.sound = sound;
     }
 
     public void setSorting(boolean flag) {

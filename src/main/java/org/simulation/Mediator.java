@@ -11,7 +11,8 @@ public interface Mediator {
     void sendClickIvent(int x, int y);
     void drawString(String str, int x, int y, java.awt.Color background, Color fontColor);
     void setSortingAlgorithm(SortingAlgorithm sortingAlgorithm);
+    void setSoundStatus(boolean flag);
     void shuffle();
     void startSorting();
-    void reset();
+    void stop();
 }
