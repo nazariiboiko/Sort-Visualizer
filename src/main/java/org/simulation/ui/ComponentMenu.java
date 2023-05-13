@@ -14,7 +14,7 @@ public class ComponentMenu implements Component {
     private String[] names;
     public ComponentMenu(Point windowSize) {
         this.windowSize = windowSize;
-        names = new String[] {"S - Shuffle", "1 - Bubble Sort", "2 - Insertion Sort"};
+        names = new String[] {"S - Shuffle", "1 - Bubble Sort", "2 - Insertion Sort", "3 - Merge Sort"};
         buttons = new ArrayList<>();
         initButtons();
     }

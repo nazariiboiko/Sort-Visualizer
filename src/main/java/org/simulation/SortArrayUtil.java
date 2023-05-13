@@ -13,6 +13,14 @@ public class SortArrayUtil {
         return array;
     }
 
+    public static int[] initAllWithSameValue(int size, int value) {
+        int[] array = new int[size];
+        for(int i = 0; i < size; i++) {
+            array[i] = value;
+        }
+        return array;
+    }
+
     public static int[] randomShuffle(int size) {
         int[] array = initializeArray(size);
         for(int i = 0; i < size; i++) {

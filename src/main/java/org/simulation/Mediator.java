@@ -15,4 +15,5 @@ public interface Mediator {
     void shuffle();
     void startSorting();
     void stop();
+    void onDestroy();
 }

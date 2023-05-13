@@ -6,6 +6,7 @@ public enum Mark {
     GREEN(new float[]{0.2f, 1f, 0.2f}),
     ORANGE(new float[]{1f, 0.5f, 0.2f}),
     RED(new float[]{1f, 0f, 0f}),
+    CYAN(new float[]{0f,0.2f,1f}),
     DEFAULT(WHITE);
 
     private final float[] mark;

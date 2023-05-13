@@ -17,6 +17,7 @@ public class SortArray {
     private int delay;
     private int accesses;
     private int comparisons;
+    private int lastMark;
 
     public SortArray(int size) {
         this.size = size;
@@ -28,6 +29,7 @@ public class SortArray {
         accesses = 0;
         comparisons = 0;
         isSortingComplete = true;
+        lastMark = 0;
     }
 
     public void resetCounter() {
@@ -36,7 +38,7 @@ public class SortArray {
         accesses = 0;
     }
 
-    public boolean getAccess() {
+    public boolean getAccess(){
         waitDelay();
         if(!isSorting)
             return false;
@@ -55,7 +57,6 @@ public class SortArray {
         try {
             Thread.sleep(delay);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -67,16 +68,16 @@ public class SortArray {
         arr[i] = arr[j];
         arr[j] = tmp;
         accesses += 2;
-        onSound(i);
+        onSound(arr[i]);
     }
 
     public boolean compare(int i, int j) {
-        resetCurrentMark();
-        mark(i, Mark.RED);
+        markTilNextMove(i, Mark.RED);
         waitDelay();
-        mark(j, Mark.RED);
+        markTilNextMove(j, Mark.RED);
         accesses += 2;
         comparisons++;
+        onSound(arr[j]);
         return arr[i] > arr[j];
     }
 
@@ -88,10 +89,12 @@ public class SortArray {
         current_mark[i] = mark;
     }
 
-    public void swapMark(int i, int j) {
-        Mark tmp = current_mark[i];
-        current_mark[i] = current_mark[j];
-        current_mark[j] = tmp;
+    public void markTilNextMove(int i, Mark mark) {
+        if(current_mark[i] != null)
+            return;
+        current_mark[i] = mark;
+        current_mark[lastMark] = Mark.DEFAULT;
+        lastMark = i;
     }
 
     public void unmark(int i) {
@@ -173,7 +176,7 @@ public class SortArray {
     }
 
     public int getValue(int i) {
-        mark(i, Mark.RED);
+        markTilNextMove(i, Mark.RED);
         return getValue(i, true);
     }
 
@@ -184,7 +187,8 @@ public class SortArray {
     }
 
     public void setValue(int i, int val) {
-        arr[i] = i;
+        arr[i] = val;
+        markTilNextMove(i, Mark.RED);
     }
 
     public int getComparisons() {

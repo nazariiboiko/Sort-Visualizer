@@ -17,6 +17,7 @@ public class ComponentArray implements Component {
     private SortingAlgorithm sortingAlgorithm;
     private Mediator mediator;
     private Sound sound;
+    private Thread sortingThread;
 
     public ComponentArray(Point windowSize, int size) {
         this.sortArray = new SortArray(size);
@@ -34,13 +35,14 @@ public class ComponentArray implements Component {
         sortArray.resetCounter();
         sortArray.setSorting(true);
         Runnable runSort = () -> {
-            sortArray.setSorting(sortingAlgorithm.sort(sortArray));
+            sortingAlgorithm.sort(sortArray);
+            sortArray.setSorting(false);
             sortArray.checkSorting();
             sortArray.setSortingComplete(true);
             sortArray.resetCurrentMark();
         };
-        Thread thread = new Thread(runSort);
-        thread.start();
+        sortingThread = new Thread(runSort);
+        sortingThread.start();
 
     }
 

@@ -2,6 +2,7 @@ package org.simulation;
 
 import org.simulation.algorithm.BubbleSort;
 import org.simulation.algorithm.InsertionSort;
+import org.simulation.algorithm.MergeSort;
 import org.simulation.listener.KeyListener;
 import org.simulation.listener.MouseListener;
 import org.simulation.listener.ResizeListener;
@@ -74,7 +75,7 @@ public class Window implements Component {
         sizeListener.free();
         mouseListener.free();
         keyListener.free();
-        mediator.stop();
+        mediator.onDestroy();
         GLFW.glfwTerminate();
     }
 
@@ -88,7 +89,7 @@ public class Window implements Component {
         } else if (key == GLFW.GLFW_KEY_2 && action == GLFW.GLFW_PRESS) {
             mediator.setSortingAlgorithm(new InsertionSort());
         } else if (key == GLFW.GLFW_KEY_3 && action == GLFW.GLFW_PRESS) {
-            //sortingMethod = new MergeSort(array);
+            mediator.setSortingAlgorithm(new MergeSort());
         }
     }
 

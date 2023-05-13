@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class Sound extends Thread {
     final static public int SAMPLING_RATE = 44100;
     final static public int SAMPLE_SIZE = 2;
-    static public double BUFFER_DURATION = 0.10;
+    static public double BUFFER_DURATION = 0.01;
     final static public int SINE_PACKET_SIZE = (int)(BUFFER_DURATION*SAMPLING_RATE*SAMPLE_SIZE);
 
     SourceDataLine line;
@@ -33,7 +33,7 @@ public class Sound extends Thread {
     }
 
     private int getFrequency(int val) {
-        return Math.abs(val) * 8 + 200;
+        return Math.abs(val*val) / 100 + 200;
     }
 
     private int getLineSampleCount() {
@@ -59,9 +59,11 @@ public class Sound extends Thread {
         ByteBuffer cBuf = ByteBuffer.allocate(SINE_PACKET_SIZE);
 
         while (!terminate) {
+            double frequency = 0;
             if(!freqs.isEmpty()) {
-                double frequency = (double)freqs.poll();
+                frequency = (double) freqs.poll();
                 System.out.println(freqs.size());
+            }
 
                 double fCycleInc = frequency / SAMPLING_RATE;
 
@@ -83,8 +85,6 @@ public class Sound extends Thread {
                 } catch (InterruptedException e) {
                 }
             }
-        }
-
         line.drain();
         line.close();
     }

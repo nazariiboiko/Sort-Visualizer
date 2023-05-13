@@ -60,6 +60,13 @@ public class ComponentCommunicationMediator implements Mediator {
     }
 
     @Override
+    public void onDestroy() {
+        componentArray.stopSorting();
+        componentArray.setSoundStatus(false);
+    }
+
+
+    @Override
     public void sendClickIvent(int x, int y) {
         componentMenu.invokeButton(x, y);
     }
