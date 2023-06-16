@@ -3,11 +3,13 @@
 This repo is an attempt to visualize sorting algorithms using only Java and OpenGL
 
 Helps to
+
 understand the working of sorting algorithm
 check total swaps required
 check total comparisions
 
 Technologies
+
 Java
 LWJGL
 
